@@ -36,67 +36,83 @@ print('Part 1')
 print(f'Largest possible area is {largest_area} between {sorted_valid_pairs[0][0]} and {sorted_valid_pairs[0][1]}')
 
 
-# # Part 2 By myself (in progress)
+# Part 2 By myself (in progress)
 
-# def are_any_points_inside(pair, shape):
-#     xs = [pair[0][0], pair[1][0]]
-#     ys = [pair[0][1], pair[1][1]]
-#     for point in shape:
-#         x_inside = (point[0] > min(xs)) and (point[0] < max(xs))
-#         y_inside = (point[1] > min(ys)) and (point[1] < max(ys))
-#         if all([x_inside, y_inside]):
-#             return True
-#     return False
-
-
-# def are_any_points_inside_or_crossing(pair, shape):
-#     xs = [pair[0][0], pair[1][0]]
-#     ys = [pair[0][1], pair[1][1]]
+def are_any_points_inside_or_crossing(pair, shape):
+    xs = [pair[0][0], pair[1][0]]
+    ys = [pair[0][1], pair[1][1]]
     
-#     for i, point in enumerate(shape):
+    for i, point in enumerate(shape):
 
-#         if all([(point[0] in xs), (point[1] in ys)]):
-#             continue
+        if all([(point[0] in xs), (point[1] in ys)]):
+            continue
 
-#         # Is inside?
-#         x_inside = (point[0] > min(xs)) and (point[0] < max(xs))
-#         y_inside = (point[1] > min(ys)) and (point[1] < max(ys))
-#         if all([x_inside, y_inside]):
-#             return True
+        # Is inside?
+        x_inside = (point[0] > min(xs)) and (point[0] < max(xs))
+        y_inside = (point[1] > min(ys)) and (point[1] < max(ys))
+
+        if all([x_inside, y_inside]):
+            return True
         
-#         if i == len(shape):
-#             next_i = 0
-#         else:
-#             next_i = i
+        if i == len(shape):
+            next_i = 0
+        else:
+            next_i = i
 
-#         # Is on the edge?
-#         prev_point = shape[i-1]
-#         next_point = shape[next_i]
+        # Is crossing?
+        next_point = shape[next_i]
 
-#         if point[0] in xs:
-#             previous_cross = (prev_point[0] in xs) and (prev_point[0] != point[0])
-#             next_cross = (next_point[0] in xs) and (next_point[0] != point[0])
-#             if any([previous_cross, next_cross]):
-#                 return True
+        # x direction
+        if (point[1] == next_point[1]) and y_inside:
 
-#         elif point[1] in ys:
-#             previous_cross = (prev_point[1] in ys) and (prev_point[1] != point[1])
-#             next_cross = (next_point[1] in ys) and (next_point[1] != point[1])
-#             if any([previous_cross, next_cross]):
-#                 return True
+            minx = min([point[0], next_point[0]])
+            maxx = max([point[0], next_point[0]])
+
+            for tile_x in range(minx, maxx+1):
+                if (tile_x > min(xs)) and (tile_x < max(xs)):
+                    return True
+
+        # y direction
+        elif (point[0] == next_point[0]) and x_inside:
+
+            miny = min([point[1], next_point[1]])
+            maxy = max([point[1], next_point[1]])
+
+            for tile_y in range(miny, maxy+1):
+                if (tile_y > min(ys)) and (tile_y < max(ys)):
+                    return True
+
+    return False
 
 
-#     return False
+for pair in sorted_valid_pairs:
+    if not are_any_points_inside_or_crossing(pair, list_of_red_tiles):
+        largest_rect_pair = pair
+        largest_area = rect_area(pair)
+        break
 
+print('Part 2')
+print(f'Largest possible area is {largest_area} between {largest_rect_pair[0]} and {largest_rect_pair[1]}')
 
-# for pair in sorted_valid_pairs:
-#     if not are_any_points_inside_or_crossing(pair, list_of_red_tiles):
-#         largest_rect_pair = pair
-#         largest_area = rect_area(pair)
-#         break
+# Visual
+from matplotlib import pyplot as plt
 
-# print('Part 2')
-# print(f'Largest possible area is {largest_area} between {largest_rect_pair[0]} and {largest_rect_pair[1]}')
+fig, ax = plt.subplots()
+
+all_xs = [point[0] for point in list_of_red_tiles] + [list_of_red_tiles[0][0]]
+all_ys = [point[1] for point in list_of_red_tiles] + [list_of_red_tiles[0][1]]
+all_ys = [-y for y in all_ys]
+
+ax.plot(all_xs, all_ys)
+
+# Plot points for the largest rectangle
+point1 = largest_rect_pair[0]
+point2 = largest_rect_pair[1]
+
+ax.plot(point1[0], -point1[1], marker='o', markersize=10, color='red')
+ax.plot(point2[0], -point2[1], marker='o', markersize=10, color='red')
+
+plt.show()
 
 
 # Part 2 Shapely
@@ -119,25 +135,5 @@ for pair in sorted_valid_pairs:
 
 print('Part 2 with shapely')
 print(f'Largest possible area is {largest_area} between {largest_rect_pair[0]} and {largest_rect_pair[1]}')
-
-# Visual
-from matplotlib import pyplot as plt
-
-fig, ax = plt.subplots()
-
-all_xs = [point[0] for point in list_of_red_tiles] + [list_of_red_tiles[0][0]]
-all_ys = [point[1] for point in list_of_red_tiles] + [list_of_red_tiles[0][1]]
-all_ys = [-y for y in all_ys]
-
-ax.plot(all_xs, all_ys)
-
-# Plot points for the largest rectangle
-point1 = largest_rect_pair[0]
-point2 = largest_rect_pair[1]
-
-ax.plot(point1[0], -point1[1], marker='o', markersize=10, color='red')
-ax.plot(point2[0], -point2[1], marker='o', markersize=10, color='red')
-
-plt.show()
 
 
